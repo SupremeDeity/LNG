@@ -16,12 +16,19 @@ public:
 	std::pair<std::string, Property*> GetProperty(const std::string section, const std::string key);
 	inline std::pair<std::string, Property*>* GetProperties() { return m_Properties.data(); };
 
+	// All Version > 1.1 stuff
+	void Add(std::string section, Property* prop);
+	void Flush();
+
 private:
 	std::string m_FilePath;
 	std::vector<std::string> m_FileBuffer;
 
 	// Section Name, Property -> Name, Type, Value
 	std::vector<std::pair<std::string, Property*>> m_Properties;
+
+	int MajorVersion = LNG_VERSION_MAJOR;
+	int MinorVersion = LNG_VERSION_MINOR;
 
 private:
 	void CheckVersion();
@@ -35,3 +42,4 @@ private:
 	void GetValueDelim(std::string const &str, const char delim, std::vector<std::string> &out);
 
 };
+

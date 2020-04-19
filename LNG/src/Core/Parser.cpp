@@ -14,8 +14,11 @@ Parser::Parser(const std::string & filepath)
 	while (std::getline(stream, line)) {
 		m_FileBuffer.push_back(line);
 	}
-
+	
 	std::cout << filepath << ": " << m_FileBuffer.size() << " lines found." << std::endl;
+
+	// Check Set Version
+	CheckVersion();
 }
 
 Parser::Parser(const std::vector<std::string>& src)
@@ -32,7 +35,6 @@ Parser::~Parser()
 void Parser::Parse()
 {
 	// Version Check
-	CheckVersion();
 	Lex();
 	
 }
@@ -47,6 +49,72 @@ std::pair<std::string, Property*> Parser::GetProperty(const std::string section,
 		}
 	}
 	return std::pair<std::string, Property*>();
+}
+
+void Parser::Add(std::string section, Property * prop)
+{
+	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Your Set Version does not support this function."; return; }
+
+	for (auto property : m_Properties) {
+		if (property.first == section) {
+			if (property.second->GetName() == prop->GetName()) {
+				std::cout << "A Property by that name already exists. Ignoring.\n" << std::endl;
+			}
+		}
+	}
+
+	m_Properties.push_back({ section, prop });
+}
+
+void Parser::Flush()
+{
+	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Your Set Version does not support this function.\n"; return; }
+
+	// Really Important to sort because of the method being used.
+	std::sort(m_Properties.begin(), m_Properties.end());
+
+	// Create Section
+	std::vector<std::string> file;
+	std::string currentSection = "";
+
+	file.push_back("@VERSION_MIN {" + std::to_string(MajorVersion) + "." + std::to_string(MinorVersion) + "}");
+
+	for (int x = 0; x < m_Properties.size(); x++) {
+		// Set the section
+		if (currentSection.empty()) {
+			currentSection = m_Properties[x].first;
+			file.push_back("\n@SECTION (" + currentSection + ")");
+		}
+		else if (currentSection != m_Properties[x].first) {
+			// If a new section has been started, we end the section
+			file.push_back("@SECTION [END]");
+			currentSection = m_Properties[x].first;
+			// Then we create the new section
+			file.push_back("\n@SECTION (" + currentSection + ")");
+		}
+		
+		// [String](RendererName): {TestRenderer}
+		std::string TypePart = "[" + m_Properties[x].second->TypeToStr(m_Properties[x].second->GetType()) + "]";
+		std::string NamePart = "(" + m_Properties[x].second->GetName() + ")";
+		std::string ValuesPart = "{" + m_Properties[x].second->ValuesToString() + "}";
+		std::string FormattedLine = TypePart + NamePart + ": " + ValuesPart;
+		file.push_back(FormattedLine);
+		
+		if ((x + 1) == m_Properties.size()) {
+			if (!currentSection.empty()) {
+				file.push_back("@SECTION [END]");
+			}
+		}
+
+	}
+
+	std::ofstream FileStream(m_FilePath, std::ios::trunc);
+	if (!FileStream.is_open()) { std::cout << "Failed to open File\n"; }
+
+	for (auto x : file) {
+		FileStream << x + "\n";
+	}
+	FileStream.close();
 }
 
 //##########################
@@ -72,15 +140,15 @@ void Parser::CheckVersion()
 			}
 
 			// Converting Char to int
-			int reqMajor = m_FileBuffer[line].at(dot - 1) - '0';
-			int reqMinor = m_FileBuffer[line].at(dot + 1) - '0';
+			 MajorVersion = m_FileBuffer[line].at(dot - 1) - '0';
+			 MinorVersion = m_FileBuffer[line].at(dot + 1) - '0';
 
-			if (reqMajor > LNG_VERSION_MAJOR) {
+			if (MajorVersion > LNG_VERSION_MAJOR) {
 				std::cout << "ERROR!: Current Parser Version is lower than the required minimum" << std::endl;
 			}
 
-			else if (reqMajor == LNG_VERSION_MAJOR) {
-				if (reqMinor > LNG_VERSION_MINOR) {
+			else if (MinorVersion == LNG_VERSION_MAJOR) {
+				if (MinorVersion > LNG_VERSION_MINOR) {
 					std::cout << "ERROR!: Current Parser Version is lower than the required minimum" << std::endl;
 				}
 			}
@@ -174,7 +242,6 @@ void Parser::Lex()
 	}
 }
 
-// TODO: SHORTEN THIS UP!
 Property * Parser::SetPropertyValues(Types type, std::vector<std::string> vals)
 {
 	const int a = 2;

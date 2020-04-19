@@ -21,6 +21,50 @@ Types Property::StrToType(const std::string & type)
 	if (type == "Bool4")	{ return Types::BOOL4; };
 }
 
+std::string Property::TypeToStr(Types type)
+{
+	switch (type)
+	{
+	case NONE:
+		return "NONE";
+	case STRING:
+		return "String";
+	case STRING2:
+		return "String2";
+	case STRING3:
+		return "String3";
+	case STRING4:
+		return "String4";
+	case FLOAT:
+		return "Float";
+	case FLOAT2:
+		return "Float2";
+	case FLOAT3:
+		return "Float3";
+	case FLOAT4:
+		return "Float4";
+	case INT:
+		return "Int";
+	case INT2:
+		return "Int2";
+	case INT3:
+		return "Int3";
+	case INT4:
+		return "Int4";
+	case BOOL:
+		return "Bool";
+	case BOOL2:
+		return "Bool2";
+	case BOOL3:
+		return "Bool3";
+	case BOOL4:
+		return "Bool4";
+	default:
+		return "NONE";
+	}
+	
+}
+
 Types Property::ParentType(Types type)
 {
 	switch (type)
@@ -62,4 +106,102 @@ Types Property::ParentType(Types type)
 	default:
 		break;
 	}
+}
+
+std::string StringProperty::ValuesToString()
+{
+	std::string Val = Value;
+	return Val;
+}
+
+std::string String2Property::ValuesToString()
+{
+	std::string Val = Value.x + ", " + Value.y;
+	return Val;
+}
+
+std::string String3Property::ValuesToString()
+{
+	std::string Val = Value.x + ", " + Value.y + ", " + Value.z;
+	return Val;
+}
+
+std::string String4Property::ValuesToString()
+{
+	std::string Val = Value.x + ", " + Value.y + ", " + Value.z + ", " + Value.w;
+	return Val;
+}
+
+
+std::string BoolProperty::ValuesToString()
+{
+	return Value ? "True" : "False";
+}
+
+std::string Bool2Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y);
+	return Val;
+}
+
+std::string Bool3Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y) + ", " + std::to_string(Value.z);
+	return Val;
+}
+
+
+std::string Bool4Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y) + ", " + std::to_string(Value.z) + ", " + std::to_string(Value.w);
+	return Val;
+}
+
+std::string IntProperty::ValuesToString()
+{
+	std::string Val = std::to_string(Value);
+	return Val;
+}
+
+std::string Int2Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y);
+	return Val;
+}
+
+std::string Int3Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y) + ", " + std::to_string(Value.z);
+	return Val;
+}
+
+
+std::string Int4Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y) + ", " + std::to_string(Value.z) + ", " + std::to_string(Value.w);
+	return Val;
+}
+
+std::string FloatProperty::ValuesToString()
+{
+	std::string Val = std::to_string(Value);
+	return Val;
+}
+
+std::string Float2Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y) ;
+	return Val;
+}
+
+std::string Float3Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y) + ", " + std::to_string(Value.z);
+	return Val;
+}
+
+std::string Float4Property::ValuesToString()
+{
+	std::string Val = std::to_string(Value.x) + ", " + std::to_string(Value.y) + ", " + std::to_string(Value.z) + ", " + std::to_string(Value.w);
+	return Val;
 }

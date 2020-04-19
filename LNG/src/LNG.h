@@ -6,7 +6,7 @@
 
 // VERSION: MAJOR.MINOR
 #define LNG_VERSION_MAJOR 1
-#define LNG_VERSION_MINOR 0
+#define LNG_VERSION_MINOR 1
 
 // Includes 
 

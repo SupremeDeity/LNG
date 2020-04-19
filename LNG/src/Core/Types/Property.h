@@ -16,6 +16,7 @@ public:
 	virtual Types GetType() const = 0;
 	virtual std::string GetName() const = 0;
 	virtual void SetName(const std::string& name) = 0;
+	virtual std::string ValuesToString() = 0;
 
 	inline bool operator!=(const Property& p)
 	{
@@ -29,6 +30,7 @@ public:
 
 	static Types StrToType(const std::string& type);
 	static Types ParentType(Types type);
+	static std::string TypeToStr(Types type);
 };
 
 class StringProperty : public Property {
@@ -45,6 +47,7 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -66,6 +69,8 @@ public:
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
+
 private:
 	std::string Name;
 	String2 Value;
@@ -85,6 +90,8 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -106,6 +113,8 @@ public:
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
+
 private:
 	std::string Name;
 	String4 Value;
@@ -114,7 +123,7 @@ private:
 // Name, Type, Key, Value
 class FloatProperty : public Property {
 public:
-	FloatProperty() : Value({ 0.0f }) {};
+	FloatProperty() : Value( 0.0f ) {};
 	FloatProperty(float val) : Value(val) {};
 
 	void SetValue(float value) { Value = value; }
@@ -126,6 +135,8 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -147,6 +158,8 @@ public:
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
+
 private:
 	std::string Name;
 	Float2 Value;
@@ -165,6 +178,8 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -185,6 +200,8 @@ public:
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
+
 private:
 	std::string Name;
 	Float4 Value;
@@ -203,6 +220,8 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -224,6 +243,8 @@ public:
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
+
 private:
 	std::string Name;
 	Int2 Value;
@@ -242,6 +263,8 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -262,6 +285,8 @@ public:
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
+
 private:
 	std::string Name;
 	Int4 Value;
@@ -269,7 +294,7 @@ private:
 
 class BoolProperty : public Property {
 public:
-	BoolProperty() : Value({ false }) {};
+	BoolProperty() : Value( false ) {};
 	BoolProperty(bool val) : Value(val) {};
 	
 	void SetValue(bool value) { Value = value; }
@@ -281,6 +306,8 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 	
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -302,6 +329,8 @@ public:
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
+
 private:
 	std::string Name;
 	Bool2 Value;
@@ -321,6 +350,8 @@ public:
 	virtual inline std::string GetName() const override { return Name; };
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
+
+	virtual std::string ValuesToString() override;
 
 private:
 	std::string Name;
@@ -342,6 +373,7 @@ public:
 
 	virtual inline void SetName(const std::string& name) override { Name = name; };
 
+	virtual std::string ValuesToString() override;
 private:
 	std::string Name;
 	Bool4 Value;
