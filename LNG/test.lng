@@ -1,0 +1,14 @@
+@VERSION_MIN {1.0}
+
+@SECTION (PhysProps)
+[String](MatName): {WoodMat}
+[Float4](Color): {20.0, 15.0, 13.0, 18.0}
+[Float](TexID): {2.0}
+[Bool](isMetallic): {False}
+@SECTION [END]
+
+@SECTION (RenderProps)
+[String](RendererName): {TestRenderer}
+[Float](RendererID): {1.0}
+[Int2](MaxVI): {10000, 4000}
+@SECTION [END]

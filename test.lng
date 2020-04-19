@@ -1,0 +1,10 @@
+@VERSION_MIN {1.0}
+
+@SECTION {"PhysProps"}
+[Float4](Color): {20, 15, 13, 18}
+[Float](TexID): {2.0}
+@SECTION [END]
+
+@SECTION {"RenderProps"}
+[Float](RendererID): {1.0}
+@SECTION [END]
