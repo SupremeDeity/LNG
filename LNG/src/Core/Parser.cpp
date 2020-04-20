@@ -34,9 +34,7 @@ Parser::~Parser()
 
 void Parser::Parse()
 {
-	// Version Check
 	Lex();
-	
 }
 
 std::pair<std::string, Property*> Parser::GetProperty(const std::string section, const std::string key)
@@ -58,7 +56,7 @@ void Parser::Add(std::string section, Property * prop)
 	for (auto property : m_Properties) {
 		if (property.first == section) {
 			if (property.second->GetName() == prop->GetName()) {
-				std::cout << "A Property by that name already exists. Ignoring.\n" << std::endl;
+				std::cout << "A Property by that name already exists. Ignoring." << std::endl;
 			}
 		}
 	}
@@ -218,8 +216,7 @@ void Parser::Lex()
 			std::string name = m_FileBuffer[line].substr(fbracket + 1, (sbracket - fbracket) - 1);
 
 			Property* prop = nullptr;
-
-			//////#######EXPERIMENTAL##########///////
+			
 			// First we split the string using the delim ','
 			std::vector<std::string> out;
 			std::string params = m_FileBuffer[line].substr(fcbracket + 1, (scbracket - fcbracket) - 1);
@@ -228,7 +225,6 @@ void Parser::Lex()
 			GetValueDelim(params, ',', out);
 			
 			prop = SetPropertyValues(type, out);
-			//////#############################//////
 
 			// This is common in all properties
 			prop->SetName(name);
@@ -341,7 +337,8 @@ void Parser::GetValueDelim(std::string const & str, const char delim, std::vecto
 {
 	// construct a stream from the string
 	std::stringstream ss(str);
-
+	
+	// Split the string using the given delim
 	std::string s;
 	while (std::getline(ss, s, delim)) {
 		out.push_back(s);
