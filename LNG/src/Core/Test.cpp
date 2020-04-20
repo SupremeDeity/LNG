@@ -2,7 +2,6 @@
 #include "LNG.h"
 
 int main() {
-	std::cout << "Parsing with LNG " << LNG_VERSION_MAJOR << "." << LNG_VERSION_MINOR << std::endl;
 
 	// Parser
 	Parser* parser = new Parser("test.lng");
@@ -23,6 +22,9 @@ int main() {
 
 	parser->Flush();
 	auto p3 = parser->GetProperty("RenderProps", "MaxVI");
+
+	// This needs to be called to show the final results. Optionally you can encase the Parser instance in another scope and the results will be shown after the scope ends (meaning whenever the Parser destructor is called.)
+	delete(parser);
 
 	std::cin.get();
 }

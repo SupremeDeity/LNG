@@ -6,8 +6,9 @@ Parser::Parser(const std::string & filepath)
 {
 	std::fstream stream(filepath, std::fstream::in);
 	if (!stream.is_open()) { 
-		std::cout << "FILE " << filepath << " NOT FOUND!! EXITING!." << std::endl;
-		std::exit(-1);
+		std::cout << "Error: FILE " << filepath << " NOT FOUND!!" << std::endl;
+		errors++;
+		return;
 	}
 
 	std::string line;
@@ -29,7 +30,7 @@ Parser::Parser(const std::vector<std::string>& src)
 Parser::~Parser()
 {
 	m_FileBuffer.clear();
-	delete this;
+	std::cout << "\nFinished Parsing. Errors: " << errors << ", Warnings: " << warnings << std::endl;
 }
 
 void Parser::Parse()
@@ -51,12 +52,14 @@ std::pair<std::string, Property*> Parser::GetProperty(const std::string section,
 
 void Parser::Add(std::string section, Property * prop)
 {
-	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Your Set Version does not support this function."; return; }
+	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Error: Your Set Version (" << MajorVersion << "." << MinorVersion << ") does not support this function."; errors++; return; }
 
 	for (auto property : m_Properties) {
 		if (property.first == section) {
 			if (property.second->GetName() == prop->GetName()) {
-				std::cout << "A Property by that name already exists. Ignoring." << std::endl;
+				std::cout << "Warning: A Property named '" + prop->GetName() + "' already exists. Ignoring\n";
+				warnings++;
+				return;
 			}
 		}
 	}
@@ -66,7 +69,8 @@ void Parser::Add(std::string section, Property * prop)
 
 void Parser::Flush()
 {
-	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Your Set Version does not support this function.\n"; return; }
+	if (errors > 0) { std::cout << "Error: Could not write to file due to errors found while parsing.\n"; }
+	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Error: Your Set Version (" << MajorVersion << "." << MinorVersion << ") does not support this function."; errors++; return; }
 
 	// Really Important to sort because of the method being used.
 	std::sort(m_Properties.begin(), m_Properties.end());
@@ -107,7 +111,7 @@ void Parser::Flush()
 	}
 
 	std::ofstream FileStream(m_FilePath, std::ios::trunc);
-	if (!FileStream.is_open()) { std::cout << "Failed to open File\n"; }
+	if (!FileStream.is_open()) { std::cout << "Error: Failed to open File\n"; errors++; }
 
 	for (auto x : file) {
 		FileStream << x + "\n";
@@ -142,15 +146,18 @@ void Parser::CheckVersion()
 			 MinorVersion = m_FileBuffer[line].at(dot + 1) - '0';
 
 			if (MajorVersion > LNG_VERSION_MAJOR) {
-				std::cout << "ERROR!: Current Parser Version is lower than the required minimum" << std::endl;
+				std::cout << "ERROR: Current Parser Version is lower than the required minimum" << std::endl;
+				errors++;
 			}
 
 			else if (MinorVersion == LNG_VERSION_MAJOR) {
 				if (MinorVersion > LNG_VERSION_MINOR) {
 					std::cout << "ERROR!: Current Parser Version is lower than the required minimum" << std::endl;
+					errors++;
 				}
 			}
 
+			std::cout << "Parsing With LNG Version: " << MajorVersion << "." << MinorVersion << std::endl;
 			break;
 		}
 	}
@@ -167,14 +174,15 @@ void Parser::Lex()
 
 			// Section has ended
 			if (m_FileBuffer[line].find("[END]") != std::string::npos) {
-				if (section.empty()) { std::cout << "Line " << line + 1 << " : No Current Section!.\n"; return; }
+				if (section.empty()) { std::cout << "Error: Line " << line + 1 << " : No Current Section!.\n"; errors++; return; }
 				section = "";
 
 				continue;
 			}
 
 			if (!section.empty()) {
-				std::cout << "Line " << line + 1 << " : New section started before end of last section '" << section << "'. Did you forgot to call @SECTION [END]?\n";
+				std::cout << "Error: Line " << line + 1 << " : New section started before end of last section '" << section << "'. Did you forgot to call @SECTION [END]?\n";
+				errors++;
 				return;
 			}
 
@@ -182,8 +190,8 @@ void Parser::Lex()
 			int fbracket = m_FileBuffer[line].find("(");
 			int sbracket = m_FileBuffer[line].find(")");
 
-			if (fbracket == std::string::npos) { std::cout << "Line " << line + 1 << ": '(' Expected!"; break; return; }
-			if (sbracket == std::string::npos) { std::cout << "Line " << line + 1 << ": ')' Expected!"; break; return; }
+			if (sbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": ')' Expected!"; errors++;  return; }
+			if (fbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '(' Expected!"; errors++; return; }
 
 			section = m_FileBuffer[line].substr(fbracket + 1, (sbracket - fbracket) - 1);
 
@@ -200,14 +208,18 @@ void Parser::Lex()
 			int fcbracket = m_FileBuffer[line].find("{");
 			int scbracket = m_FileBuffer[line].find("}");
 
-			if (fsbracket == std::string::npos) { std::cout << "Line " << line + 1 << ": '[' Expected!"; break; return; }
-			if (ssbracket == std::string::npos) { std::cout << "Line " << line + 1 << "': ']' Expected!"; break; return; }
+			std::string colonSpace = m_FileBuffer[line].substr(sbracket, (sbracket - fcbracket) - 1);
+			int colon = colonSpace.find(":");
 
-			if (fbracket == std::string::npos) { std::cout << "Line " << line + 1 << ": '(' Expected!"; break; return; }
-			if (sbracket == std::string::npos) { std::cout << "Line " << line + 1 << ": ')' Expected!"; break; return; }
+			if (fsbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '[' Expected!\n"; errors++; return; }
+			if (ssbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << "': ']' Expected!\n"; errors++; return; }
 
-			if (fcbracket == std::string::npos) { std::cout << "Line " << line + 1 << ": '{' Expected!"; break; return; }
-			if (scbracket == std::string::npos) { std::cout << "Line " << line + 1 << ": '}' Expected!"; break; return; }
+			if (fbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '(' Expected!\n"; errors++; return; }
+			if (sbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": ')' Expected!\n"; errors++; return; }
+
+			if (fcbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '{' Expected!\n"; errors++; return; }
+			if (scbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '}' Expected!\n"; errors++; return; }
+			if (colon == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": ':' Expected!\n"; errors++; return; }
 
 
 			std::string typeStr = m_FileBuffer[line].substr(fsbracket + 1, (ssbracket - fsbracket) - 1);

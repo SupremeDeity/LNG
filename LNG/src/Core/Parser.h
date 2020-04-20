@@ -30,6 +30,9 @@ private:
 	int MajorVersion = LNG_VERSION_MAJOR;
 	int MinorVersion = LNG_VERSION_MINOR;
 
+	int errors = 0;
+	int warnings = 0;
+
 private:
 	void CheckVersion();
 	void Lex();
