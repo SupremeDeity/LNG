@@ -6,9 +6,9 @@
 
 // VERSION: MAJOR.MINOR
 #define LNG_VERSION_MAJOR 1
-#define LNG_VERSION_MINOR 2
+#define LNG_VERSION_MINOR 3
 
 // Includes 
-
+#include<lngpch.h>
 #include "Core/Parser.h"
 #include "Core/Types/Property.h"

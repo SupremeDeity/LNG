@@ -17,9 +17,6 @@ Parser::Parser(const std::string & filepath)
 	}
 	
 	std::cout << filepath << ": " << m_FileBuffer.size() << " lines found." << std::endl;
-
-	// Check Set Version
-	CheckVersion();
 }
 
 Parser::Parser(const std::vector<std::string>& src)
@@ -52,8 +49,6 @@ std::pair<std::string, Property*> Parser::GetProperty(const std::string section,
 
 void Parser::Add(std::string section, Property * prop)
 {
-	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Error: Your Set Version (" << MajorVersion << "." << MinorVersion << ") does not support this function."; errors++; return; }
-
 	for (auto property : m_Properties) {
 		if (property.first == section) {
 			if (property.second->GetName() == prop->GetName()) {
@@ -70,7 +65,6 @@ void Parser::Add(std::string section, Property * prop)
 void Parser::Flush()
 {
 	if (errors > 0) { std::cout << "Error: Could not write to file due to errors found while parsing.\n"; }
-	if (!(MajorVersion + MinorVersion >= 2)) { std::cout << "Error: Your Set Version (" << MajorVersion << "." << MinorVersion << ") does not support this function."; errors++; return; }
 
 	// Really Important to sort because of the method being used.
 	std::sort(m_Properties.begin(), m_Properties.end());
@@ -78,8 +72,6 @@ void Parser::Flush()
 	// Create Section
 	std::vector<std::string> file;
 	std::string currentSection = "";
-
-	file.push_back("@VERSION_MIN {" + std::to_string(MajorVersion) + "." + std::to_string(MinorVersion) + "}");
 
 	for (int x = 0; x < m_Properties.size(); x++) {
 		// Set the section
@@ -95,14 +87,21 @@ void Parser::Flush()
 			file.push_back("\n@SECTION (" + currentSection + ")");
 		}
 		
-		// [String](RendererName): {TestRenderer}
 		std::string TypePart = "[" + m_Properties[x].second->TypeToStr(m_Properties[x].second->GetType()) + "]";
 		std::string NamePart = "(" + m_Properties[x].second->GetName() + ")";
-		std::string ValuesPart = "{" + m_Properties[x].second->ValuesToString() + "}";
+
+		std::string ValuesPart;
+
+		if (m_Properties[x].second->ParentType(m_Properties[x].second->GetType()) == Types::STRING) {
+			ValuesPart = "{\"" + m_Properties[x].second->ValuesToString() + "\"}";
+		} else {
+			ValuesPart = "{" + m_Properties[x].second->ValuesToString() + "}";
+		}
+
 		std::string FormattedLine = TypePart + NamePart + ": " + ValuesPart;
 		file.push_back(FormattedLine);
 		
-		if ((x + 1) == m_Properties.size()) {
+		if (((int64_t)x + 1) == m_Properties.size()) {
 			if (!currentSection.empty()) {
 				file.push_back("@SECTION [END]");
 			}
@@ -111,7 +110,7 @@ void Parser::Flush()
 	}
 
 	std::ofstream FileStream(m_FilePath, std::ios::trunc);
-	if (!FileStream.is_open()) { std::cout << "Error: Failed to open File\n"; errors++; }
+	if (!FileStream.is_open()) { std::cout << "Error: Failed to open file\n"; errors++; }
 
 	for (auto x : file) {
 		FileStream << x + "\n";
@@ -122,46 +121,6 @@ void Parser::Flush()
 //##########################
 //####### PRIVATE ##########
 //##########################
-
-void Parser::CheckVersion()
-{
-	for (int line = 0; line < m_FileBuffer.size(); line++) {
-		if (m_FileBuffer[line].find("@VERSION") != std::string::npos) {
-			int startbracket = m_FileBuffer[line].find("{");
-			int endbracket = m_FileBuffer[line].find("}");
-			int dot = m_FileBuffer[line].find(".");
-
-			if(startbracket == std::string::npos) {
-				std::cout << "Line " << line + 1 << ": Expected '{'\n";
-			}
-			if(endbracket == std::string::npos) {
-				std::cout << "Line " << line + 1 << ": Expected '}'\n";
-			}
-			if (dot == std::string::npos) {
-				std::cout << "Line " << line + 1 << ": Expected '.'\n";
-			}
-
-			// Converting Char to int
-			 MajorVersion = m_FileBuffer[line].at(dot - 1) - '0';
-			 MinorVersion = m_FileBuffer[line].at(dot + 1) - '0';
-
-			if (MajorVersion > LNG_VERSION_MAJOR) {
-				std::cout << "ERROR: Current Parser Version is lower than the required minimum" << std::endl;
-				errors++;
-			}
-
-			else if (MinorVersion == LNG_VERSION_MAJOR) {
-				if (MinorVersion > LNG_VERSION_MINOR) {
-					std::cout << "ERROR!: Current Parser Version is lower than the required minimum" << std::endl;
-					errors++;
-				}
-			}
-
-			std::cout << "Parsing With LNG Version: " << MajorVersion << "." << MinorVersion << std::endl;
-			break;
-		}
-	}
-}
 
 void Parser::Lex()
 {
@@ -187,13 +146,13 @@ void Parser::Lex()
 			}
 
 			// In Section...
-			int fbracket = m_FileBuffer[line].find("(");
-			int sbracket = m_FileBuffer[line].find(")");
+			size_t fbracket = m_FileBuffer[line].find("(");
+			size_t sbracket = m_FileBuffer[line].find(")");
 
 			if (sbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": ')' Expected!"; errors++;  return; }
 			if (fbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '(' Expected!"; errors++; return; }
 
-			section = m_FileBuffer[line].substr(fbracket + 1, (sbracket - fbracket) - 1);
+			section = m_FileBuffer[line].substr((int64_t)fbracket + 1, ((int64_t)sbracket - (int64_t)fbracket) - 1);
 
 			continue;
 
@@ -201,15 +160,17 @@ void Parser::Lex()
 
 		else if(!section.empty() && !m_FileBuffer[line].empty()) {
 			
-			int fsbracket = m_FileBuffer[line].find("[");
-			int ssbracket = m_FileBuffer[line].find("]");
-			int fbracket = m_FileBuffer[line].find("(");
-			int sbracket = m_FileBuffer[line].find(")");
-			int fcbracket = m_FileBuffer[line].find("{");
-			int scbracket = m_FileBuffer[line].find("}");
+			size_t fsbracket = m_FileBuffer[line].find("[");
+			size_t ssbracket = m_FileBuffer[line].find("]");
+			size_t fbracket = m_FileBuffer[line].find("(");
+			size_t sbracket = m_FileBuffer[line].find(")");
+			size_t fcbracket = m_FileBuffer[line].find("{");
+			size_t scbracket = m_FileBuffer[line].find("}");
+			size_t fquote = m_FileBuffer[line].find("\"");
+			size_t squote = m_FileBuffer[line].find("\"", fquote + 1);
 
-			std::string colonSpace = m_FileBuffer[line].substr(sbracket, (sbracket - fcbracket) - 1);
-			int colon = colonSpace.find(":");
+			std::string colonSpace = m_FileBuffer[line].substr(sbracket, ((int64_t)sbracket - (int64_t)fcbracket) - 1);
+			size_t colon = colonSpace.find(":");
 
 			if (fsbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '[' Expected!\n"; errors++; return; }
 			if (ssbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << "': ']' Expected!\n"; errors++; return; }
@@ -219,19 +180,41 @@ void Parser::Lex()
 
 			if (fcbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '{' Expected!\n"; errors++; return; }
 			if (scbracket == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '}' Expected!\n"; errors++; return; }
+
 			if (colon == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": ':' Expected!\n"; errors++; return; }
 
 
-			std::string typeStr = m_FileBuffer[line].substr(fsbracket + 1, (ssbracket - fsbracket) - 1);
+			std::string typeStr = m_FileBuffer[line].substr((int64_t)fsbracket + 1, ((int64_t)ssbracket - (int64_t)fsbracket) - 1);
 			Types type = Property::StrToType(typeStr);
+			
+			if (type == Types::STRING) {
+				if (fquote == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '\"' Expected!\n"; errors++; return; }
+				if (squote == std::string::npos) { std::cout << "Error: Line " << line + 1 << ": '\"' Expected!\n"; errors++; return; }
+			}
+			else {
+				if (fquote != std::string::npos || squote != std::string::npos) {
+					std::cout << "Error: Line " << line + 1 << ": Expected Type to be 'String', got " << Property::TypeToStr(type) << " instead\n";
+					errors++;
+					return;
+				}
+			}
 
-			std::string name = m_FileBuffer[line].substr(fbracket + 1, (sbracket - fbracket) - 1);
+
+			std::string name = m_FileBuffer[line].substr((int64_t)fbracket + 1, ((int64_t)sbracket - (int64_t)fbracket) - 1);
 
 			Property* prop = nullptr;
 			
 			// First we split the string using the delim ','
 			std::vector<std::string> out;
-			std::string params = m_FileBuffer[line].substr(fcbracket + 1, (scbracket - fcbracket) - 1);
+			std::string params;
+
+			if (type == Types::STRING) {
+				params = m_FileBuffer[line].substr((int64_t)fquote + 1, ((int64_t)squote - (int64_t)fquote) - 1);
+			}
+			else {
+				params = m_FileBuffer[line].substr((int64_t)fcbracket + 1, ((int64_t)scbracket - (int64_t)fcbracket) - 1);
+			}
+
 			params.erase(remove(params.begin(), params.end(), ' '), params.end());
 
 			GetValueDelim(params, ',', out);
@@ -240,9 +223,7 @@ void Parser::Lex()
 
 			// This is common in all properties
 			prop->SetName(name);
-			
 
-			// Experiment
 			m_Properties.push_back({ section, prop });
 
 			continue;
@@ -255,18 +236,6 @@ Property * Parser::SetPropertyValues(Types type, std::vector<std::string> vals)
 	const int a = 2;
 	if (type == Types::STRING) {
 		return new StringProperty({ vals[0] });
-	}
-
-	else if (type == Types::STRING2) {
-		return new String2Property({ vals[0] , vals[1] });
-	}
-
-	else if (type == Types::STRING3) {
-		return new String3Property({ vals[0] , vals[1], vals[2] });
-	}
-
-	else if (type == Types::STRING4) {
-		return new String4Property({ vals[0] , vals[1], vals[2], vals[3] });
 	}
 	
 	if (Property::ParentType(type) == Types::FLOAT) {
@@ -343,6 +312,7 @@ Property * Parser::SetPropertyValues(Types type, std::vector<std::string> vals)
 			break;
 		}
 	}
+	return nullptr;
 }
 
 void Parser::GetValueDelim(std::string const & str, const char delim, std::vector<std::string>& out)
@@ -373,6 +343,7 @@ bool Parser::ConvertFloat(Types type, std::string Val, float & ToVal)
 		}
 		return false;
 	}
+	return false;
 }
 
 bool Parser::ConvertInt(Types type, std::string Val, int & ToVal)
@@ -412,4 +383,5 @@ bool Parser::ConvertBool(Types type, std::string Val, bool & ToVal)
 
 		return false;
 	}
+	return false;
 }

@@ -1,17 +1,5 @@
 #pragma once
 
-struct String2 {
-	std::string x, y;
-};
-
-struct String3 {
-	std::string x, y, z;
-};
-
-struct String4 {
-	std::string x, y, z, w;
-};
-
 struct Float2 {
 	float x, y;
 };

@@ -3,38 +3,28 @@
 
 Types Property::StrToType(const std::string & type)
 {
-	if (type == "String")	{ return Types::STRING; };
-	if (type == "String2")	{ return Types::STRING2; };
-	if (type == "String3")	{ return Types::STRING3; };
-	if (type == "String4")	{ return Types::STRING4; };
-	if (type == "Float")	{ return Types::FLOAT; };
-	if (type == "Float2")	{ return Types::FLOAT2; };
-	if (type == "Float3")	{ return Types::FLOAT3; };
-	if (type == "Float4")	{ return Types::FLOAT4; };
-	if (type == "Int")		{ return Types::INT; };
-	if (type == "Int2")		{ return Types::INT2; };
-	if (type == "Int3")		{ return Types::INT3; };
-	if (type == "Int4")		{ return Types::INT4; };
-	if (type == "Bool")		{ return Types::BOOL; };
-	if (type == "Bool2")	{ return Types::BOOL2; };
-	if (type == "Bool3")	{ return Types::BOOL3; };
-	if (type == "Bool4")	{ return Types::BOOL4; };
+	     if	(type == "String")	{ return Types::STRING; }
+	else if (type == "Float")	{ return Types::FLOAT; }
+	else if (type == "Float2")	{ return Types::FLOAT2; }
+	else if (type == "Float3")	{ return Types::FLOAT3; }
+	else if (type == "Float4")	{ return Types::FLOAT4; }
+	else if (type == "Int")		{ return Types::INT; }
+	else if (type == "Int2")	{ return Types::INT2; }
+	else if (type == "Int3")	{ return Types::INT3; }
+	else if (type == "Int4")	{ return Types::INT4; }
+	else if (type == "Bool")	{ return Types::BOOL; }
+	else if (type == "Bool2")	{ return Types::BOOL2; }
+	else if (type == "Bool3")	{ return Types::BOOL3; }
+	else if (type == "Bool4")	{ return Types::BOOL4; }
+	else						{ return Types::NONE; }
 }
 
 std::string Property::TypeToStr(Types type)
 {
 	switch (type)
 	{
-	case NONE:
-		return "NONE";
 	case STRING:
 		return "String";
-	case STRING2:
-		return "String2";
-	case STRING3:
-		return "String3";
-	case STRING4:
-		return "String4";
 	case FLOAT:
 		return "Float";
 	case FLOAT2:
@@ -69,15 +59,7 @@ Types Property::ParentType(Types type)
 {
 	switch (type)
 	{
-	case NONE:
-		break;
 	case STRING:
-		return Types::STRING;
-	case STRING2:
-		return Types::STRING;
-	case STRING3:
-		return Types::STRING;
-	case STRING4:
 		return Types::STRING;
 	case FLOAT:
 		return Types::FLOAT;
@@ -104,34 +86,14 @@ Types Property::ParentType(Types type)
 	case BOOL4:
 		return Types::BOOL;
 	default:
-		break;
+		return Types::NONE;
 	}
 }
 
 std::string StringProperty::ValuesToString()
 {
-	std::string Val = Value;
-	return Val;
+	return Value;
 }
-
-std::string String2Property::ValuesToString()
-{
-	std::string Val = Value.x + ", " + Value.y;
-	return Val;
-}
-
-std::string String3Property::ValuesToString()
-{
-	std::string Val = Value.x + ", " + Value.y + ", " + Value.z;
-	return Val;
-}
-
-std::string String4Property::ValuesToString()
-{
-	std::string Val = Value.x + ", " + Value.y + ", " + Value.z + ", " + Value.w;
-	return Val;
-}
-
 
 std::string BoolProperty::ValuesToString()
 {

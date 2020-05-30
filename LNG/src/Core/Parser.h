@@ -24,7 +24,7 @@ private:
 	std::string m_FilePath;
 	std::vector<std::string> m_FileBuffer;
 
-	// Section Name, Property -> Name, Type, Value
+	// Section Name, Property
 	std::vector<std::pair<std::string, Property*>> m_Properties;
 
 	int MajorVersion = LNG_VERSION_MAJOR;
@@ -34,7 +34,6 @@ private:
 	int warnings = 0;
 
 private:
-	void CheckVersion();
 	void Lex();
 
 	bool ConvertFloat(Types type, std::string Val, float &ToVal);
@@ -45,4 +44,3 @@ private:
 	void GetValueDelim(std::string const &str, const char delim, std::vector<std::string> &out);
 
 };
-
