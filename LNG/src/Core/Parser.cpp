@@ -54,7 +54,7 @@ void Parser::Add(std::string section, Property * prop)
 	for (auto property : m_Properties) {
 		if (property.first == section) {
 			if (property.second->GetName() == prop->GetName()) {
-				if (Assert(property.second->GetName() != prop->GetName(), "Warning: A Property named '" + prop->GetName() + "' already exists. Ignoring", "warning")) { return; }
+				if (Assert(property.second->GetName() != prop->GetName(), "Warning: A Property named '" + prop->GetName() + "' already exists. Ignoring", AssertType::WARNING)) { return; }
 			}
 		}
 	}
@@ -137,7 +137,7 @@ void Parser::Lex()
 
 			// Section has ended
 			if (m_FileBuffer[line].find("[END]") != std::string::npos) {
-				if (Assert(!section.empty(), "Line: " + std::to_string((line + 1)) + ": No current section!", "error")) { return; }
+				if (Assert(!section.empty(), "Line: " + std::to_string((line + 1)) + ": No current section!", AssertType::ERROR)) { return; }
 				section = "";
 
 				continue;
@@ -153,8 +153,8 @@ void Parser::Lex()
 			size_t fbracket = m_FileBuffer[line].find("(");
 			size_t sbracket = m_FileBuffer[line].find(")");
 
-			if (Assert(fbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '('", "error")) { return; }
-			if (Assert(sbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ')'", "error")) { return; }
+			if (Assert(fbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '('", AssertType::ERROR)) { return; }
+			if (Assert(sbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ')'", AssertType::ERROR)) { return; }
 
 			section = m_FileBuffer[line].substr((int64_t)fbracket + 1, ((int64_t)sbracket - (int64_t)fbracket) - 1);
 
@@ -174,29 +174,29 @@ void Parser::Lex()
 			size_t fquote = m_FileBuffer[line].find("\"", fcbracket + 1);
 			size_t squote = m_FileBuffer[line].find("\"", fquote + 1);
 
-			if (Assert(fsbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '['", "error")) { return; }
-			if (Assert(ssbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ']'", "error")) { return; }
+			if (Assert(fsbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '['", AssertType::ERROR)) { return; }
+			if (Assert(ssbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ']'", AssertType::ERROR)) { return; }
 
-			if (Assert(fbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '('", "error")) { return; }
-			if (Assert(sbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ')'", "error")) { return; }
+			if (Assert(fbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '('", AssertType::ERROR)) { return; }
+			if (Assert(sbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ')'", AssertType::ERROR)) { return; }
 
-			if (Assert(fcbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '{'", "error")) { return; }
-			if (Assert(scbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '}'", "error")) { return; }
+			if (Assert(fcbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '{'", AssertType::ERROR)) { return; }
+			if (Assert(scbracket != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '}'", AssertType::ERROR)) { return; }
 
-			if (Assert(colon != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ':'", "error")) { return; }
+			if (Assert(colon != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected ':'", AssertType::ERROR)) { return; }
 
 
 			std::string typeStr = m_FileBuffer[line].substr((int64_t)fsbracket + 1, ((int64_t)ssbracket - (int64_t)fsbracket) - 1);
 			Types type = Property::StrToType(typeStr);
 
 			if (type == Types::STRING) {
-				if (Assert(fquote != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '\"'", "error")) { return; }
-				if (Assert(squote != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected Closing '\"'", "error")) { return; }
+				if (Assert(fquote != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected '\"'", AssertType::ERROR)) { return; }
+				if (Assert(squote != std::string::npos, "Line: " + std::to_string((line + 1)) + ": Expected Closing '\"'", AssertType::ERROR)) { return; }
 			}
 			else {
 				// If quotes are used but type != String
 				if (fquote != std::string::npos || squote != std::string::npos) {
-					if (Assert(false, "Line: " + std::to_string((line + 1)) + ": Expected 'String', got " + Property::TypeToStr(type) + " instead", "error")) { return; }
+					if (Assert(false, "Line: " + std::to_string((line + 1)) + ": Expected 'String', got " + Property::TypeToStr(type) + " instead", AssertType::ERROR)) { return; }
 					errors++;
 					return;
 				}
@@ -218,8 +218,6 @@ void Parser::Lex()
 				params = m_FileBuffer[line].substr((int64_t)fcbracket + 1, ((int64_t)scbracket - (int64_t)fcbracket) - 1);
 			}
 
-			params.erase(remove(params.begin(), params.end(), ' '), params.end());
-
 			GetValueDelim(params, ',', out);
 
 			prop = SetPropertyValues(type, out);
@@ -234,14 +232,14 @@ void Parser::Lex()
 	}
 }
 
-bool Parser::Assert(bool condition, std::string toThrow, std::string type)
+bool Parser::Assert(bool condition, std::string toThrow, AssertType type)
 {
 	if (!condition) {
 		std::cout << type << ": " << toThrow << std::endl;
-		if (type == "error") {
+		if (type == AssertType::ERROR) {
 			errors++;
 		}
-		else {
+		else if (type == AssertType::WARNING) {
 			warnings++;
 		}
 		return true;

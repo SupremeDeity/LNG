@@ -3,6 +3,12 @@
 #include "Types/Property.h"
 #include <string>
 
+enum AssertType {
+	None,
+	ERROR,
+	WARNING
+};
+
 class Parser {
 
 public:
@@ -45,7 +51,7 @@ private:
 
 private:
 	void Lex();
-	bool Assert(bool condition, std::string toThrow, std::string type);
+	bool Assert(bool condition, std::string toThrow, AssertType type);
 
 	bool ConvertFloat(Types type, std::string Val, float &ToVal);
 	bool ConvertInt(Types type, std::string Val, int &ToVal);
