@@ -6,25 +6,35 @@
 class Parser {
 
 public:
-	// Parse From File
+	/*
+		Create Parser instance from file.
+	*/
 	Parser(const std::string& filepath);
-	// Parse from provided string vector. Each line needs to be in a separate index.
+	/*
+		Create Parser instance from string.
+		Each line should be on a separate index.
+	*/
 	Parser(const std::vector<std::string>& src);
 	~Parser();
 
+	/*
+		Checks for errors and warnings in the file. Populates Buffer with variables.
+	*/
 	void Parse();
 	std::pair<std::string, Property*> GetProperty(const std::string section, const std::string key);
-	inline std::pair<std::string, Property*>* GetProperties() { return m_Properties.data(); };
+	inline std::vector<std::pair<std::string, Property*>>* GetProperties() { return &m_Properties; };
 
-	// All Version > 1.1 stuff
+	// Add a new property to given section. Creates section if it does not exist.
 	void Add(std::string section, Property* prop);
+
+	// Write changes to file.
 	void Flush();
 
 private:
 	std::string m_FilePath;
 	std::vector<std::string> m_FileBuffer;
 
-	// Section Name, Property
+	// <Section Name, Property>
 	std::vector<std::pair<std::string, Property*>> m_Properties;
 
 	int MajorVersion = LNG_VERSION_MAJOR;
@@ -35,6 +45,7 @@ private:
 
 private:
 	void Lex();
+	bool Assert(bool condition, std::string toThrow, std::string type);
 
 	bool ConvertFloat(Types type, std::string Val, float &ToVal);
 	bool ConvertInt(Types type, std::string Val, int &ToVal);
