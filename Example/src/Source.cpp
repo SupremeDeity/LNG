@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
 		parser->Parse();
 
 		auto props = parser->GetProperties();
+		parser->SortProperties();
 
 		std::string section = "";
 
@@ -38,5 +39,9 @@ int main(int argc, char** argv) {
 	else {
 		std::cout << "No file provided to be parsed. Use -f arg together with path to .lng file.\n";
 	}
+	
+	std::string str = "0.32";
+	float f = *(float*)&str;
+	std::cout << &f << std::endl;
 	std::cin.get();
 }

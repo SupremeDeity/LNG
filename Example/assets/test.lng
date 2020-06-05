@@ -5,6 +5,6 @@
 @SECTION [END]
 
 @SECTION (RenderProps)
-[Float](RendererID): {1.000000}
+[Int](RendererID): {1}
 [String](RendererName): {"TestRenderer"}
 @SECTION [END]

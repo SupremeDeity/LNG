@@ -48,7 +48,7 @@ std::pair<std::string, Property*> Parser::GetProperty(const std::string section,
 	return std::pair<std::string, Property*>();
 }
 
-void Parser::Add(std::string section, Property * prop)
+void Parser::AddProperty(std::string section, Property * prop)
 {
 	// Check if property already exists.
 	for (auto property : m_Properties) {
@@ -60,6 +60,11 @@ void Parser::Add(std::string section, Property * prop)
 	}
 
 	m_Properties.push_back({ section, prop });
+}
+
+void Parser::SortProperties()
+{
+	std::sort(m_Properties.begin(), m_Properties.end());
 }
 
 void Parser::Flush()
@@ -218,15 +223,24 @@ void Parser::Lex()
 				params = m_FileBuffer[line].substr((int64_t)fcbracket + 1, ((int64_t)scbracket - (int64_t)fcbracket) - 1);
 			}
 
-			GetValueDelim(params, ',', out);
+			// Split the params if variable is a vector type.
+			Split(params, ',', out);
 
 			prop = SetPropertyValues(type, out);
 
 			// This is common in all properties
 			prop->SetName(name);
 
-			m_Properties.push_back({ section, prop });
+			// Give warning if property exists
+			for (auto prop : m_Properties) {
+				if (prop.first == section && prop.second->GetName() == name) {
+					if (Assert(false, "Line: " + std::to_string(line + 1) + " : Duplicate Key \"" + name + "\" Found in Section \"" + section + "\"", AssertType::WARNING)) {}
+				}
+			}
 
+			// Add Property to buffer
+			m_Properties.push_back({ section, prop });
+			
 			continue;
 		}
 	}
@@ -234,8 +248,12 @@ void Parser::Lex()
 
 bool Parser::Assert(bool condition, std::string toThrow, AssertType type)
 {
+	std::string typeStr = "";
+	if (type == AssertType::ERROR) { typeStr = "ERROR"; }
+	else if (type == AssertType::WARNING) { typeStr = "WARNING"; }
+	else { typeStr = "NONE"; }
 	if (!condition) {
-		std::cout << type << ": " << toThrow << std::endl;
+		std::cout << typeStr << ": " << toThrow << std::endl;
 		if (type == AssertType::ERROR) {
 			errors++;
 		}
@@ -258,9 +276,7 @@ Property * Parser::SetPropertyValues(Types type, std::vector<std::string> vals)
 		std::vector<float> arr;
 
 		for (auto toConvert : vals) {
-			float Converted;
-			ConvertFloat(type, toConvert, Converted);
-			arr.push_back(Converted);
+			arr.push_back(std::stof(toConvert));
 		}
 
 		switch (type)
@@ -283,9 +299,7 @@ Property * Parser::SetPropertyValues(Types type, std::vector<std::string> vals)
 		std::vector<int> arr;
 
 		for (auto toConvert : vals) {
-			int Converted;
-			ConvertInt(type, toConvert, Converted);
-			arr.push_back(Converted);
+			arr.push_back(std::stoi(toConvert));
 		}
 
 		switch (type)
@@ -331,7 +345,7 @@ Property * Parser::SetPropertyValues(Types type, std::vector<std::string> vals)
 	return nullptr;
 }
 
-void Parser::GetValueDelim(std::string const & str, const char delim, std::vector<std::string>& out)
+void Parser::Split(std::string const & str, const char delim, std::vector<std::string>& out)
 {
 	// construct a stream from the string
 	std::stringstream ss(str);
@@ -341,45 +355,6 @@ void Parser::GetValueDelim(std::string const & str, const char delim, std::vecto
 	while (std::getline(ss, Value, delim)) {
 		out.push_back(Value);
 	}
-}
-
-bool Parser::ConvertFloat(Types type, std::string Val, float & ToVal)
-{
-	if (Property::ParentType(type) == Types::FLOAT) {
-		char* endptr;
-		float i = std::strtof(Val.c_str(), &endptr);
-		if ((Val == endptr) || (i == ERANGE))
-		{
-			return false;
-		}
-		else
-		{
-			ToVal = i;
-			return true;
-		}
-		return false;
-	}
-	return false;
-}
-
-bool Parser::ConvertInt(Types type, std::string Val, int & ToVal)
-{
-	if (Property::ParentType(type) == Types::INT) {
-		char* endptr;
-		int i = std::strtol(Val.c_str(), &endptr, 0);
-		if ((Val == endptr) || (i == ERANGE))
-		{
-			return false;
-		}
-		else
-		{
-			ToVal = i;
-			return true;
-		}
-		return false;
-	}
-	else return false;
-
 }
 
 bool Parser::ConvertBool(Types type, std::string Val, bool & ToVal)

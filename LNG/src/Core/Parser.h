@@ -31,7 +31,8 @@ public:
 	inline std::vector<std::pair<std::string, Property*>>* GetProperties() { return &m_Properties; };
 
 	// Add a new property to given section. Creates section if it does not exist.
-	void Add(std::string section, Property* prop);
+	void AddProperty(std::string section, Property* prop);
+	void SortProperties();
 
 	// Write changes to file.
 	void Flush();
@@ -58,6 +59,6 @@ private:
 	bool ConvertBool(Types type, std::string Val, bool &ToVal);
 	Property* SetPropertyValues(Types type, std::vector<std::string> vals);
 
-	void GetValueDelim(std::string const &str, const char delim, std::vector<std::string> &out);
+	void Split(std::string const &str, const char delim, std::vector<std::string> &out);
 
 };
