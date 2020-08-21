@@ -1,10 +1,24 @@
-@SECTION (PhysProps)
-[Float](TexID): {2.000000}
-[String](Render): {"Yolo"}
-[Float4](Color): {20.000000, 15.000000, 13.000000, 18.000000}
+@SECTION (LNG)
+[String](Name): {"LNG"}
 @SECTION [END]
 
-@SECTION (RenderProps)
-[Int](RendererID): {1}
-[String](RendererName): {"TestRenderer"}
+@SECTION (Example)
+[Float](float): {1.2}
+[Float2](float2): {0.3, 3.5}
+[Float3](float3): {1.2, 5.3, 2.4}
+[Float4](float4): {111.665, 0.43, 4.32, 1.53}
+@SECTION [END]
+
+@SECTION (IntTest)
+[Int](int): {1}
+[Int2](int2): {3, 5}
+[Int3](int3): {2, 5, 4}
+[Int4](int4): {665, 43, 32, 53}
+@SECTION [END]
+
+@SECTION (BoolTest)
+[Bool](bool): {true}
+[Bool2](bool2): {false, true}
+[Bool3](bool3): {true, false, false}
+[Bool4](bool4): {false, true, false, true}
 @SECTION [END]

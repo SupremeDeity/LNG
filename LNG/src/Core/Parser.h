@@ -32,7 +32,6 @@ public:
 
 	// Add a new property to given section. Creates section if it does not exist.
 	void AddProperty(std::string section, Property* prop);
-	void SortProperties();
 
 	// Write changes to file.
 	void Flush();

@@ -51,10 +51,10 @@ std::pair<std::string, Property*> Parser::GetProperty(const std::string section,
 void Parser::AddProperty(std::string section, Property * prop)
 {
 	// Check if property already exists.
-	for (auto property : m_Properties) {
-		if (property.first == section) {
-			if (property.second->GetName() == prop->GetName()) {
-				if (Assert(property.second->GetName() != prop->GetName(), "Warning: A Property named '" + prop->GetName() + "' already exists. Ignoring", AssertType::WARNING)) { return; }
+	for (auto [key, value] : m_Properties) {
+		if (key == section) {
+			if (value->GetName() == prop->GetName()) {
+				if (Assert(value->GetName() != prop->GetName(), "Warning: A Property named '" + prop->GetName() + "' already exists. Ignoring", AssertType::WARNING)) { return; }
 			}
 		}
 	}
@@ -62,22 +62,14 @@ void Parser::AddProperty(std::string section, Property * prop)
 	m_Properties.push_back({ section, prop });
 }
 
-void Parser::SortProperties()
-{
-	std::sort(m_Properties.begin(), m_Properties.end());
-}
-
 void Parser::Flush()
 {
 	if (errors > 0) { std::cout << "Error: Could not write to file due to errors found while parsing.\n"; return; }
 
-	// Really Important to sort because of the method being used.
-	std::sort(m_Properties.begin(), m_Properties.end());
 
 	// Create Section
 	std::vector<std::string> file;
 	std::string currentSection = "";
-
 	for (int x = 0; x < m_Properties.size(); x++) {
 		// Set the section
 		if (currentSection.empty()) {
@@ -226,6 +218,8 @@ void Parser::Lex()
 			// Split the params if variable is a vector type.
 			Split(params, ',', out);
 
+			if (Assert(out.size() == Property::ParamCountForProperty(type), "Line: " + std::to_string(line + 1) + ": Invalid number of arguments provided!", AssertType::ERROR)) { return; }
+
 			prop = SetPropertyValues(type, out);
 
 			// This is common in all properties
@@ -359,14 +353,17 @@ void Parser::Split(std::string const & str, const char delim, std::vector<std::s
 
 bool Parser::ConvertBool(Types type, std::string Val, bool & ToVal)
 {
+	
+	Val.erase(std::remove_if(Val.begin(), Val.end(), isspace), Val.end());
+	
 	if (Property::ParentType(type) == Types::BOOL) {
-		if (Val.compare("true") == 0 || Val.compare("True") == 0 || Val.compare("1") == 0)
+		if ((Val.compare("true") == 0) || (Val.compare("True") == 0) || (Val.compare("1") == 0))
 		{
 			ToVal = true;
 			return true;
 		}
 
-		else if (Val.compare("false") == 0 || Val.compare("False") == 0 || Val.compare("0") == 0)
+		else if ((Val.compare("false") == 0) || (Val.compare("False") == 0) || (Val.compare("0") == 0))
 		{
 			ToVal = false;
 			return true;
