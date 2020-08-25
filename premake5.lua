@@ -1,7 +1,7 @@
 workspace "LNG"
     architecture "x86_64"
 
-    startproject "LNG"
+    startproject "Example"
 
     configurations {
         "Debug",
@@ -10,12 +10,11 @@ workspace "LNG"
 
 outputdir = "%{cfg.system}-%{cfg.buildcfg}-%{cfg.architecture}"
 IncludeDir = {}
-IncludeDir["FMT"] = "PersonalCUtils/vendor/fmt/include"
 
 
-project "PersonalCUtils"
-    location "PersonalCUtils"
-    kind "StaticLib"
+project "Example"
+    location "Example"
+    kind "ConsoleApp"
     language "C++"
 
     targetdir ("bin/%{prj.name}/" .. outputdir)
@@ -28,12 +27,17 @@ project "PersonalCUtils"
     }
 
     includedirs {
-        "PersonalCUtils/src/",
-		"%{IncludeDir.FMT}"
+        "LNG/src/",
     }
-
-    pchheader "pcpch.h"
-    pchsource "PersonalCUtils/src/pcpch.cpp"
+	
+	libdirs {
+        "bin/LNG/" .. outputdir .. "/"
+    }
+	
+	links {
+        "LNG",
+        "LNG.lib"
+    }
 
     filter "system:windows"
         cppdialect "C++Latest"
@@ -52,34 +56,31 @@ project "PersonalCUtils"
 
 project "LNG"
     location "LNG"
-    kind "ConsoleApp"
+    kind "StaticLib"
     language "C++"
     
     targetdir ("bin/%{prj.name}/" .. outputdir)
     objdir    ("bin-int/%{prj.name}/" .. outputdir)
     
+	includedirs {
+        "LNG/src/",
+    }
+	
+	pchheader "lngpch.h"
+    pchsource "LNG/src/lngpch.cpp"
+	
     files {
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp"
-    }
-    
-    includedirs {
-        "PersonalCUtils/src/",
-		"%{IncludeDir.FMT}"
-    }
-
-    libdirs {
-        "bin/PersonalCUtils/" .. outputdir .. "/"
-    }
-
-    links {
-        "PersonalCUtils",
-        "PersonalCUtils.lib"
     }
 
     filter "system:windows"
         cppdialect "C++Latest"
         systemversion "latest"
+		
+		 defines {
+            "PLATFORM_WINDOWS"
+        }
     
     filter "configurations:Debug"
         defines "DEBUG"
